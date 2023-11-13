@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="categories_array">
-        <item>history</item>
-        <item>celebrity</item>
-        <item>food</item>
+        <item>Eastern Conference</item>
+        <item>Western Conference</item>
+        <item>Atlantic Division</item>
+        <item>Central Division</item>
+        <item>Southeast Division</item>
+        <item>Northwest Division</item>
+        <item>Pacific Division</item>
+        <item>Southwest Division</item>
     </string-array>
 </resources>
