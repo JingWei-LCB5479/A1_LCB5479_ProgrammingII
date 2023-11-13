@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,23 +16,19 @@ import com.android.volley.toolbox.Volley
 import com.example.apicalllist.databinding.ActivityMainBinding
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
-import java.util.Scanner
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    var jokesList = mutableListOf<String>()
+    var teamList = mutableListOf<String>()  // Renamed from jokesList to teamList
     private lateinit var arrayAdapter: ArrayAdapter<String>
-    val chooseCatResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+    val chooseTeamResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             result -> if (result.resultCode == Activity.RESULT_OK) {
-                val category = result.data?.getStringExtra("category").toString()
+        val category = result.data?.getStringExtra("category").toString()
         Log.d("category_intent", category)
-        jokesList.clear()
-        handleRetrieveQuoteWithVolley(category)
-            }
+        teamList.clear()
+        retrieveTeamsWithVolley(category)  // Renamed method
+    }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,8 +38,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         arrayAdapter = ArrayAdapter<String>(
-            this, android.R.layout.simple_list_item_1, jokesList)
-        binding.lvJokes.adapter = arrayAdapter
+            this, android.R.layout.simple_list_item_1, teamList)
+        binding.lvTeams.adapter = arrayAdapter  // Renamed from lvJokes to lvTeams
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -57,45 +52,40 @@ class MainActivity : AppCompatActivity() {
 
         if (item.itemId == R.id.menu_category) {
 
-            chooseCatResult.launch(Intent(this, ChooseCatActivity::class.java))
+            chooseTeamResult.launch(Intent(this, ChooseCatActivity::class.java))
 
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private fun handleRetrieveQuoteWithVolley(category: String) {
+    private fun retrieveTeamsWithVolley(category: String) {  // Renamed method
 
         val queue = Volley.newRequestQueue(this)
-        val url = "https://api.chucknorris.io/jokes/search?query=" + category
+        val url = "https://www.balldontlie.io/api/v1/teams"  // Updated URL for basketball teams
         Log.d("url", url)
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
                 try {
-                        val rootJSONObject = JSONObject(response.toString());
+                    val teamsArray = response.getJSONArray("data")  // Updated for basketball teams
 
-                        val resultSet = JSONArray(rootJSONObject.getString("result"))
+                    for (i in 0 until teamsArray.length()) {
 
-                        for (i in 0 until resultSet.length()) {
+                        val team = teamsArray.getJSONObject(i)
+                        val teamName = team.getString("full_name")  // Get team name
 
-                            //Get result JSON object node
-                            val oneSet = resultSet.getJSONObject(i)
+                        teamList.add(teamList.size, teamName)
+                        arrayAdapter.notifyDataSetChanged()
+                        binding.lvTeams.setSelection(0)  // Renamed from lvJokes to lvTeams
+                    }
 
-                            //Get result details
-                            val value = oneSet.getString("value")
-
-                            jokesList.add(jokesList.size, value)
-                            arrayAdapter.notifyDataSetChanged()
-                            binding.lvJokes.setSelection(0)
-                        }
-
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     e.printStackTrace()
-                    Toast.makeText(this@MainActivity, "Response error: " + e.printStackTrace(), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Error retrieving data", Toast.LENGTH_SHORT).show()
                 }
             },
             {
-                Toast.makeText(this@MainActivity, "Fail to get response", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Network error", Toast.LENGTH_SHORT).show()
             }
         )
 

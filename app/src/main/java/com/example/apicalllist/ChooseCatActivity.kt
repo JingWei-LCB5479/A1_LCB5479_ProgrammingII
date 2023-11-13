@@ -13,6 +13,7 @@ import com.example.apicalllist.databinding.ActivityChooseCatBinding
 class ChooseCatActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     private lateinit var binding: ActivityChooseCatBinding
+    private var selectedCategory: String = ""  // Variable to hold the selected category
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,32 +22,28 @@ class ChooseCatActivity : AppCompatActivity(), AdapterView.OnItemSelectedListene
 
         val spinner: Spinner = binding.sprCategory
         spinner.onItemSelectedListener = this
-        // Create an ArrayAdapter using the string array and a default spinner layout.
         ArrayAdapter.createFromResource(
             this,
-            R.array.categories_array,
+            R.array.categories_array,  // Ensure this array is updated with basketball categories
             android.R.layout.simple_spinner_item
         ).also { adapter ->
-            // Specify the layout to use when the list of choices appears.
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            // Apply the adapter to the spinner.
             spinner.adapter = adapter
+        }
+
+        binding.btnShowTeams.setOnClickListener {  // Renamed from btnShowJokes
+            val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra("category", selectedCategory)
+            setResult(RESULT_OK, intent)
+            finish()
         }
     }
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        if (parent != null) {
-            val catValue = parent.getItemAtPosition(position)
-            binding.btnShowJokes.setOnClickListener(){
-                val intent = Intent(this, MainActivity::class.java)
-                intent.putExtra("category", catValue.toString())
-                setResult(Activity.RESULT_OK, intent)
-                finish()
-            }
-        }
+        selectedCategory = parent?.getItemAtPosition(position).toString()
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {
-        TODO("Not yet implemented")
+        // Implement behavior for when nothing is selected, if necessary
     }
 }
